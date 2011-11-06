@@ -1,0 +1,1 @@
+python tools/playgame.py "scala deepbeige/target/scala-2.9.1/deepbeige_2.9.1-1.0.jar" "python tools/sample_bots/python/HunterBot.py" --map_file tools/maps/example/tutorial1.map --log_dir game_logs --turns 60 --scenario --food none --player_seed 7 --verbose -e
