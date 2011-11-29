@@ -14,7 +14,7 @@ class MyBot extends Bot {
 
     val food_routes = food.map{ morsel => morsel ->
       ants.map { ant => ant ->
-	game.distanceFrom(ant.tile).to(morsel.tile) }
+	game.distanceFrom(ant.tile).to(morsel.tile) }.toList.sortWith( _._2 < _._2)
     }
 
     System.err.println(food_routes.toString)
