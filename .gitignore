@@ -1,3 +1,8 @@
 .DS_Store
 game_logs/
 tools/*.pyc
+tools/visualizer/visualize_locally.pyc
+
+tools/visualizer/__init__.pyc
+
+tools/sample_bots/python/ants.pyc
