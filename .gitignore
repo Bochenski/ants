@@ -1,2 +1,3 @@
 .DS_Store
 game_logs/
+tools/*.pyc
