@@ -4,7 +4,8 @@ case class Board(myAnts: Map[Tile, MyAnt] = Map(),
                  food: Map[Tile, Food] = Map(),
                  corpses: Map[Tile, Corpse] = Map(),
                  myHills: Map[Tile, MyHill] = Map(),
-                 enemyHills: Map[Tile, EnemyHill] = Map()) {
+                 enemyHills: Map[Tile, EnemyHill] = Map(),
+	         exploredTiles: Map[Tile, Visited] = Map()) {
 
   lazy val elements = myAnts ++ enemyAnts ++ water ++ food ++ corpses ++ myHills ++ enemyHills
 
@@ -16,5 +17,6 @@ case class Board(myAnts: Map[Tile, MyAnt] = Map(),
       case corpse: Corpse => this.copy(corpses = this.corpses.updated(corpse.tile, corpse))
       case friend: MyHill => this.copy(myHills = this.myHills.updated(friend.tile, friend))
       case enemy: EnemyHill => this.copy(enemyHills = this.enemyHills.updated(enemy.tile, enemy))
+      case visited: Visited => this.copy(exploredTiles = this.exploredTiles.updated(visited.tile, visited))
     }
 }

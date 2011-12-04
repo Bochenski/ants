@@ -4,9 +4,10 @@ import util.matching.Regex
 
 object Parser {
 
-  def parse(source: Source, params: GameParameters = GameParameters(), knownWater: Map[Tile, Water] = Map.empty) = {
+  def parse(source: Source, params: GameParameters = GameParameters(), knownWater: Map[Tile, Water] = Map.empty, 
+	    visitedTiles: Map[Tile, Visited] = Map.empty, lastOrders: Set[Order]) = {
     val lines = source.getLines
-
+    
     def parseInternal(state: GameInProgress): Game = {
       val line = lines.next.trim
       line match {
@@ -23,7 +24,10 @@ object Parser {
       }
     }
 
-    parseInternal(GameInProgress(parameters = params, board = Board(water = knownWater)))
+    val old_game = GameInProgress(parameters = params, board = Board(water = knownWater, exploredTiles = visitedTiles))
+    val new_game = lastOrders.foldLeft(old_game) { (game, order) => game including Visited(game.tile(order.point).of(order.tile))} 
+
+    parseInternal(new_game)
   }
 
   // The sequence of these is important. The parser will invoke the first that matches.
