@@ -38,17 +38,18 @@ class MyBot extends Bot {
   private def getAntsForTargets(game: Game, available_ants: Iterable[MyAnt], targets: Iterable[Tile],
 				blocked_locations: List[Tile]) : (Set[Order], Iterable[MyAnt], List[Tile]) = {
     val result = targets.foldLeft((Set[Order](),available_ants,blocked_locations,List[MyAnt]())) { (state,target) => {
-      if (state._2 == 0) { state } else {
-	val ant = available_ants.reduceLeft[MyAnt]{(ant1, ant2) => 
+      if (state._2.size == 0) { state } 
+      else {
+	val ant = state._2.reduceLeft[MyAnt]{(ant1, ant2) => 
 	  if(game.distanceFrom(ant1.tile).to(target) < game.distanceFrom(ant2.tile).to(target)) { ant1 } else { ant2 }
-      }
-      val possible_directions = List(North,East,South,West).filter(d => game.directionFrom(ant.tile).to(target).contains(d))
-      getOrder(game,ant,possible_directions,state._3) match { 
-	case Some(order) => { 
-	  val new_blocked_locations = game.tile(order.point).of(ant.tile) +: state._3
-	  (state._1 + order, state._2.filterNot(_ == ant),new_blocked_locations,ant +: state._4)}
-	case None => state
-      }
+	}
+        val possible_directions = List(North,East,South,West).filter(d => game.directionFrom(ant.tile).to(target).contains(d))
+        getOrder(game,ant,possible_directions,state._3) match { 
+	  case Some(order) => { 
+	    val new_blocked_locations = game.tile(order.point).of(ant.tile) +: state._3
+	    (state._1 + order, state._2.filterNot(x => x == ant),new_blocked_locations,ant +: state._4)}
+	  case None => state
+        }
       }
     }}
     (result._1,available_ants.filterNot(x => result._4.contains(x)),result._3)											       
@@ -58,7 +59,7 @@ class MyBot extends Bot {
 				blocked_locations: List[Tile]) : (Set[Order], Iterable[MyAnt], List[Tile]) = {
     val result = available_ants.foldLeft((Set[Order](),targets,blocked_locations,List[MyAnt]())) { (state,ant) => {
       if (state._2.size == 0) { state } else {
-      val target = targets.reduceLeft[Tile]{(target1, target2) => 
+      val target = state._2.reduceLeft[Tile]{(target1, target2) => 
 	if(game.distanceFrom(ant.tile).to(target1) < game.distanceFrom(ant.tile).to(target2)) { target1 } else { target2 }
       }
       val possible_directions = List(North,East,South,West).filter(d => game.directionFrom(ant.tile).to(target).contains(d))
