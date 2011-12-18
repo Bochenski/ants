@@ -5,7 +5,7 @@ import util.matching.Regex
 object Parser {
 
   def parse(source: Source, params: GameParameters = GameParameters(), knownWater: Map[Tile, Water] = Map.empty, 
-	    visitedTiles: Map[Tile, Visited] = Map.empty, lastOrders: Set[Order]) = {
+	    visitedTiles: Map[Tile, Visited] = Map.empty, lastOrders: Set[Order], targets: Map[Tile, Option[MyAnt]]) = {
     val lines = source.getLines
     
     def parseInternal(state: GameInProgress): Game = {
@@ -24,7 +24,7 @@ object Parser {
       }
     }
 
-    val old_game = GameInProgress(parameters = params, board = Board(water = knownWater, exploredTiles = visitedTiles))
+    val old_game = GameInProgress(parameters = params, board = Board(water = knownWater, exploredTiles = visitedTiles), targets = targets)
     val new_game = lastOrders.foldLeft(old_game) { (game, order) => game including Visited(game.tile(order.point).of(order.tile))} 
 
     parseInternal(new_game)

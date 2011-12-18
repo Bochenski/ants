@@ -10,22 +10,23 @@ class AntsGame(in: InputStream = System.in, out: OutputStream = System.out) {
   def run(bot: Bot) = {
     try {
 
-      def playNextTurn(game: Game, lastOrders: Set[Order]): Unit = {
-        val newGameState = Parser.parse(source, game.parameters, game.board.water,game.board.exploredTiles, lastOrders)
+      def playNextTurn(game: Game, lastOrders: Set[Order], targets: Map[Tile,Option[MyAnt]]): Unit = {
+        val newGameState = Parser.parse(source, game.parameters, game.board.water,game.board.exploredTiles, lastOrders, targets)
         if (newGameState.gameOver) Unit
         else {
-          val orders = bot.ordersFrom(newGameState)
+	  val result = bot.ordersFrom(newGameState)
+          val orders = result._1
+	  val targets = result._2
           orders.map(_.inServerSpeak).foreach(writer.write)
           writer.write("go\n")
           writer.flush
-          playNextTurn(newGameState,orders)
+          playNextTurn(newGameState,orders,targets)
         }
       }
-      playNextTurn(GameInProgress(),Set[Order]())
+      playNextTurn(GameInProgress(),Set[Order](),Map[Tile,Option[MyAnt]]())
 
     } catch {
       case t => t.printStackTrace
     }
   }
-
 }

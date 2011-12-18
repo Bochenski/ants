@@ -5,18 +5,18 @@ object MyBot extends App {
 
 class MyBot extends Bot {
 
-  def ordersFrom(game: Game): Set[Order] = {
+  def ordersFrom(game: Game): (Set[Order],Map[Tile,Option[MyAnt]]) = {
     val ants = game.board.myAnts.values
  
-    System.err.println("Deep Beige is Hungry")
+//    System.err.println("Deep Beige is Hungry")
     val my_hill_tiles = game.board.myHills.values.map { hill => hill.tile }.toList
     val food_orders = getAntsForTargets(game,ants,game.board.food.keys,my_hill_tiles)
     val explore_orders = getTargetsForAnts(game, food_orders._2,unexplored(game),food_orders._3)
     val left_overs = getLeftOvers(game,explore_orders._2,explore_orders._3)
  
-    food_orders._1 ++ explore_orders._1 ++ left_overs
+    (food_orders._1 ++ explore_orders._1 ++ left_overs, game.targets)
   }
-
+  
   private def unexplored(game:Game) = {
      {
       (0 until game.parameters.rows).foldLeft(Set[Tile]()) {(set, row) =>
@@ -33,22 +33,35 @@ class MyBot extends Bot {
      available_ants.flatMap(  ant => { 
       getOrder(game,ant,List(North,East,South,West),blocked_locations)     }).toSet 
   }			 
-
+  
   private def getAntsForTargets(game: Game, available_ants: Iterable[MyAnt], targets: Iterable[Tile],
 				blocked_locations: List[Tile]) : (Set[Order], Iterable[MyAnt], List[Tile]) = {
     val result = targets.foldLeft((Set[Order](),available_ants,blocked_locations,List[MyAnt]())) { (state,target) => {
       if (state._2.size == 0) { state } 
       else {
-	val ant = state._2.reduceLeft[MyAnt]{(ant1, ant2) => 
-	  if(game.distanceFrom(ant1.tile).to(target) < game.distanceFrom(ant2.tile).to(target)) { ant1 } else { ant2 }
+	val ant: MyAnt = { 
+  	  //do we already have an ant for this target?
+	  game.targets.get(target)  match {
+	    case Some(optionAnt) => {
+	      optionAnt match  {
+		case Some(a) => a
+		case None => {state._2.reduceLeft[MyAnt]{(ant1, ant2) => 
+	          if(game.distanceFrom(ant1.tile).to(target) < game.distanceFrom(ant2.tile).to(target)) { ant1 } else { ant2 }
+	        }}
+	      }
+	    }
+	    case None =>  {state._2.reduceLeft[MyAnt]{(ant1, ant2) => 
+	      if(game.distanceFrom(ant1.tile).to(target) < game.distanceFrom(ant2.tile).to(target)) { ant1 } else { ant2 }
+	    }}
+	  }
 	}
         val possible_directions = List(North,East,South,West).filter(d => game.directionFrom(ant.tile).to(target).contains(d))
-        getOrder(game,ant,possible_directions,state._3) match { 
-	  case Some(order) => { 
-	    val new_blocked_locations = game.tile(order.point).of(ant.tile) +: state._3
-	    (state._1 + order, state._2.filterNot(x => x == ant),new_blocked_locations,ant +: state._4)}
-	  case None => state
-        }
+             getOrder(game,ant,possible_directions,state._3) match { 
+               case Some(order) => { 
+               val new_blocked_locations = game.tile(order.point).of(ant.tile) +: state._3
+	         (state._1 + order, state._2.filterNot(x => x == ant),new_blocked_locations,ant +: state._4)}
+	       case None => state
+             }
       }
     }}
     (result._1,available_ants.filterNot(x => result._4.contains(x)),result._3)											       
